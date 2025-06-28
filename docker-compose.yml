@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - LLM_MODEL=mistral
+      - EMBEDDING_MODEL=nomic-embed-text
+      - CHUNK_SIZE=1000
+      - CHUNK_OVERLAP=200
+    volumes:
+      - ./backend:/app
+      - ./backend/db:/app/db
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      - frontend
+    networks:
+      - chatbot-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - chatbot-network
+
+networks:
+  chatbot-network:
+    driver: bridge
+
+volumes:
+  db_data:
+  uploads_data: 
